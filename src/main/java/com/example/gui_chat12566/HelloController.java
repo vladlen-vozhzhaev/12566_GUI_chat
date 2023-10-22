@@ -64,7 +64,7 @@ public class HelloController {
                                     public void run() {
                                         if(jsonObject.containsKey("onlineUsers")){
                                             // jsonObject = {"onlineUsers": [{"id": 1, "name": "Ivan"},{"id": 2, "name": "Oleg"},{"id": 3, "name": "Igor"}]}
-                                            userList.getChildren().removeAll(); // Удаляем элементы из VBOX (слева)
+                                            userList.getChildren().clear(); // Удаляем элементы из VBOX (слева)
                                             JSONArray jsonArray = (JSONArray) jsonObject.get("onlineUsers"); // Получаем массив со списком пользователей
                                             // jsonArray = [{"id": 1, "name": "Ivan"},{"id": 2, "name": "Oleg"},{"id": 3, "name": "Igor"}]
                                             jsonArray.forEach(user->{ // Перебираем массив пользователей (тут с помощью лямбда)
@@ -77,6 +77,13 @@ public class HelloController {
                                                     textArea.clear();
                                                     chatName.setText("Приватная переписка с "+name);
                                                     toId = Integer.parseInt(jsonUser.get("id").toString());
+                                                    JSONObject jsonObject1 = new JSONObject();
+                                                    jsonObject1.put("targetHistory", toId);
+                                                    try {
+                                                        out.writeUTF(jsonObject1.toJSONString());
+                                                    } catch (IOException e) {
+                                                        throw new RuntimeException(e);
+                                                    }
                                                 });
                                                 userList.getChildren().add(userBtn); // Добавляем кнопку на VBOX
                                         });
