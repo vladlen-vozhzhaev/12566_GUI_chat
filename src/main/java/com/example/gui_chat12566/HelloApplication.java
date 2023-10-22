@@ -14,7 +14,12 @@ public class HelloApplication extends Application {
         Scene scene = new Scene(fxmlLoader.load(), 500, 400); // W, H
         stage.setTitle("Сетевой чат");
         stage.setScene(scene);
+        stage.setOnCloseRequest(event -> {
+            System.exit(0);
+        });
         stage.show();
+        HelloController helloController = fxmlLoader.getController();
+        helloController.connect();
     }
 
     public static void main(String[] args) {

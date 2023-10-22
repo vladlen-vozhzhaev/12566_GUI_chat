@@ -7,6 +7,7 @@
     <VBox fx:id="userList" prefWidth="200"/>
     <VBox alignment="CENTER" prefWidth="300">
         <children>
+            <Label prefHeight="25" prefWidth="300" fx:id="chatName"/>
             <TextArea editable="false" fx:id="textArea" prefHeight="350" prefWidth="300" />
             <HBox prefHeight="50" prefWidth="300">
                 <children>
@@ -14,9 +15,7 @@
                     <Button onAction="#onSendHandler" prefWidth="100" mnemonicParsing="false" text="Отправить" />
                 </children>
             </HBox>
-            <HBox>
-                <Button onAction="#connect" prefWidth="300" text="Подключиться"/>
-            </HBox>
+            <!--<Button onAction="#connect" prefWidth="300" text="Подключиться"/>-->
         </children>
     </VBox>
 </HBox>

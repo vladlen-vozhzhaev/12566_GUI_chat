@@ -25,21 +25,27 @@ public class HelloController {
     @FXML
     private VBox userList;
     DataOutputStream out;
+    @FXML
+    private Label chatName;
+    private int toId = 0;
 
     @FXML
     private void onSendHandler(){
+        JSONObject jsonObject = new JSONObject();
         String msg = textField.getText();
         textArea.appendText(msg+"\n");
         textField.clear();
+        jsonObject.put("message", msg);
+        jsonObject.put("toId", toId);
         try {
-            out.writeUTF(msg);
+            out.writeUTF(jsonObject.toJSONString());
         } catch (IOException e) {
             System.out.println("Потеряно соединение с сервером");
         }
     }
 
     @FXML
-    private void connect(){
+    public void connect(){
         try {
             Socket socket = new Socket("127.0.0.1", 9123);
             out = new DataOutputStream(socket.getOutputStream());
@@ -52,25 +58,34 @@ public class HelloController {
                             String response = in.readUTF(); // ожидаем сообщение от сервера (оно будет в формате JSOB)
                             JSONParser jsonParser = new JSONParser(); // Парсер (анализатор json)
                             JSONObject jsonObject = (JSONObject) jsonParser.parse(response); // Превращаем полученный от сервера JSON в JSONObject
-                            if(jsonObject.containsKey("onlineUsers")){ // Проверяем, есть ли тут ключ "onlineUsers"
+                            // Проверяем, есть ли тут ключ "onlineUsers"
                                 Platform.runLater(new Runnable() { // Отложенный поток, для работы с UI (User interface)
                                     @Override
                                     public void run() {
-                                        userList.getChildren().removeAll(); // Удаляем элементы из VBOX (слева)
-                                        JSONArray jsonArray = (JSONArray) jsonObject.get("onlineUsers"); // Получаем массив со списком пользователей
-                                        jsonArray.forEach(name->{ // Перебираем массив пользователей (тут с помощью лямбда)
-                                            Button userBtn = new Button(); // Создаём кнопку
-                                            userBtn.setText(name.toString()); // Добавляем текст на кнопку
-                                            userBtn.setPrefWidth(200); // Устанавливаем ширину кнопки 200px
-                                            userList.getChildren().add(userBtn); // Добавляем кнопку на VBOX
+                                        if(jsonObject.containsKey("onlineUsers")){
+                                            // jsonObject = {"onlineUsers": [{"id": 1, "name": "Ivan"},{"id": 2, "name": "Oleg"},{"id": 3, "name": "Igor"}]}
+                                            userList.getChildren().removeAll(); // Удаляем элементы из VBOX (слева)
+                                            JSONArray jsonArray = (JSONArray) jsonObject.get("onlineUsers"); // Получаем массив со списком пользователей
+                                            // jsonArray = [{"id": 1, "name": "Ivan"},{"id": 2, "name": "Oleg"},{"id": 3, "name": "Igor"}]
+                                            jsonArray.forEach(user->{ // Перебираем массив пользователей (тут с помощью лямбда)
+                                                JSONObject jsonUser = (JSONObject) user; // jsonUser = {"id": 1, "name": "Ivan"}
+                                                String name = jsonUser.get("name").toString();
+                                                Button userBtn = new Button(); // Создаём кнопку
+                                                userBtn.setText(name); // Добавляем текст на кнопку
+                                                userBtn.setPrefWidth(200); // Устанавливаем ширину кнопки 200px
+                                                userBtn.setOnAction(event -> {
+                                                    textArea.clear();
+                                                    chatName.setText("Приватная переписка с "+name);
+                                                    toId = Integer.parseInt(jsonUser.get("id").toString());
+                                                });
+                                                userList.getChildren().add(userBtn); // Добавляем кнопку на VBOX
                                         });
+                                        }else{
+                                            String msg = jsonObject.get("message").toString(); // Получаем текст из JSOBObject по ключу "message"
+                                            textArea.appendText(msg+"\n"); // Печатаем текст на экране приложения в textArea
+                                        }
                                     }
                                 });
-                            }else{
-                                String msg = jsonObject.get("message").toString(); // Получаем текст из JSOBObject по ключу "message"
-                                textArea.appendText(msg+"\n"); // Печатаем текст на экране приложения в textArea
-                            }
-
                         }
                     }catch (IOException e){
                         textArea.appendText("Потеряно соединение с сервером\n");
