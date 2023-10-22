@@ -67,25 +67,12 @@ public class HelloController {
                                             userList.getChildren().clear(); // Удаляем элементы из VBOX (слева)
                                             JSONArray jsonArray = (JSONArray) jsonObject.get("onlineUsers"); // Получаем массив со списком пользователей
                                             // jsonArray = [{"id": 1, "name": "Ivan"},{"id": 2, "name": "Oleg"},{"id": 3, "name": "Igor"}]
+                                            renderUserBtn("Общий чат", 0);
                                             jsonArray.forEach(user->{ // Перебираем массив пользователей (тут с помощью лямбда)
                                                 JSONObject jsonUser = (JSONObject) user; // jsonUser = {"id": 1, "name": "Ivan"}
                                                 String name = jsonUser.get("name").toString();
-                                                Button userBtn = new Button(); // Создаём кнопку
-                                                userBtn.setText(name); // Добавляем текст на кнопку
-                                                userBtn.setPrefWidth(200); // Устанавливаем ширину кнопки 200px
-                                                userBtn.setOnAction(event -> {
-                                                    textArea.clear();
-                                                    chatName.setText("Приватная переписка с "+name);
-                                                    toId = Integer.parseInt(jsonUser.get("id").toString());
-                                                    JSONObject jsonObject1 = new JSONObject();
-                                                    jsonObject1.put("targetHistory", toId);
-                                                    try {
-                                                        out.writeUTF(jsonObject1.toJSONString());
-                                                    } catch (IOException e) {
-                                                        throw new RuntimeException(e);
-                                                    }
-                                                });
-                                                userList.getChildren().add(userBtn); // Добавляем кнопку на VBOX
+                                                int toId = Integer.parseInt(jsonUser.get("id").toString());
+                                                renderUserBtn(name, toId);
                                         });
                                         }else{
                                             String msg = jsonObject.get("message").toString(); // Получаем текст из JSOBObject по ключу "message"
@@ -106,5 +93,29 @@ public class HelloController {
             e.printStackTrace();
         }
 
+    }
+
+    private void renderUserBtn(String name, int id){
+        Button userBtn = new Button(); // Создаём кнопку
+        userBtn.setText(name); // Добавляем текст на кнопку
+        userBtn.setPrefWidth(200); // Устанавливаем ширину кнопки 200px
+        userBtn.setStyle("-fx-background-color: #E0FFFF");
+        userBtn.setOnAction(event -> {
+            userBtn.getParent().getChildrenUnmodifiable().forEach(btn->{
+                btn.setStyle("-fx-background-color: #E0FFFF");
+            });
+            userBtn.setStyle("-fx-background-color: #87CEEB");
+            textArea.clear();
+            chatName.setText("Приватная переписка с "+name);
+            toId = id;
+            JSONObject jsonObject1 = new JSONObject();
+            jsonObject1.put("targetHistory", toId);
+            try {
+                out.writeUTF(jsonObject1.toJSONString());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
+        userList.getChildren().add(userBtn); // Добавляем кнопку на VBOX
     }
 }
